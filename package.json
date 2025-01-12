@@ -1,0 +1,11 @@
+{
+  "name": "bazar-syria",
+  "version": "1.0.0",
+  "description": "Backend Service For Bazar Syria Website",
+  "main": "server.js",
+  "scripts": {
+    "start": "nodemon server"
+  },
+  "author": "Ahmed Hamed",
+  "license": "ISC"
+}

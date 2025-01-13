@@ -4,8 +4,26 @@
   "description": "Backend Service For Bazar Syria Website",
   "main": "server.js",
   "scripts": {
-    "start": "nodemon server"
+    "start:dev": "nodemon server"
   },
-  "author": "Ahmed Hamed",
-  "license": "ISC"
+  "author": "Quill Agency",
+  "license": "ISC",
+  "dependencies": {
+    "dotenv": "^16.4.7",
+    "express": "^4.21.2",
+    "mongodb": "^6.12.0",
+    "mongoose": "^8.9.4",
+    "nodemon": "^3.1.9",
+    "cors": "^2.8.5",
+    "i18n": "^0.15.1",
+    "joi": "^17.13.1",
+    "jsonwebtoken": "^9.0.2",
+    "moment": "^2.30.1",
+    "moment-timezone": "^0.5.45",
+    "multer": "^1.4.5-lts.1",
+    "nodemailer": "^6.9.13",
+    "swagger-jsdoc": "^6.2.8",
+    "swagger-ui-express": "^5.0.0",
+    "winston": "^3.13.0"
+  }
 }

@@ -9,7 +9,6 @@ class DatabaseConnect {
       // Reuse the existing connection
       return this.connection;
     }
-    console.log(process.env.PORT);
     await mongoose
       .connect(process.env.MONGO_URI)
       .then(() => {

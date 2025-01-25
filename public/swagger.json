@@ -23,6 +23,10 @@
   ],
   "components": {
     "securitySchemes": {
+      "noauthAuth": {
+        "type": "http",
+        "scheme": "noauth"
+      },
       "bearerAuth": {
         "type": "http",
         "scheme": "bearer"
@@ -436,7 +440,7 @@
         },
         "security": [
           {
-            "bearerAuth": []
+            "noauthAuth": []
           }
         ],
         "parameters": [
@@ -616,6 +620,7 @@
       "post": {
         "tags": ["User"],
         "summary": "Follow User",
+        "description": "**Here in this endpoint, Make sure that you pass a member Id of the user you want to follow.**",
         "requestBody": {
           "content": {}
         },
@@ -632,14 +637,71 @@
               "type": "integer"
             },
             "required": true,
-            "example": "3128955"
+            "example": "3079765"
           }
         ],
         "responses": {
           "200": {
-            "description": "Successful response",
+            "description": "OK",
+            "headers": {
+              "X-Powered-By": {
+                "schema": {
+                  "type": "string",
+                  "example": "Express"
+                }
+              },
+              "Access-Control-Allow-Origin": {
+                "schema": {
+                  "type": "string",
+                  "example": "*"
+                }
+              },
+              "Content-Type": {
+                "schema": {
+                  "type": "string",
+                  "example": "application/json; charset=utf-8"
+                }
+              },
+              "Content-Length": {
+                "schema": {
+                  "type": "integer",
+                  "example": "60"
+                }
+              },
+              "ETag": {
+                "schema": {
+                  "type": "string",
+                  "example": "W/\"3c-5GTNpY6iKksbnJ8cmZKybK0nApw\""
+                }
+              },
+              "Date": {
+                "schema": {
+                  "type": "string",
+                  "example": "Sat, 25 Jan 2025 15:44:45 GMT"
+                }
+              },
+              "Connection": {
+                "schema": {
+                  "type": "string",
+                  "example": "keep-alive"
+                }
+              },
+              "Keep-Alive": {
+                "schema": {
+                  "type": "string",
+                  "example": "timeout=5"
+                }
+              }
+            },
             "content": {
-              "application/json": {}
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                },
+                "example": {
+                  "message": "You are now following أحمد حامد على"
+                }
+              }
             }
           }
         }
@@ -818,6 +880,196 @@
                     }
                   ],
                   "length": 1
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/6795004170a40bca20db877f/rate": {
+      "post": {
+        "tags": ["User"],
+        "summary": "Rate User",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "example": {
+                  "rate": 5,
+                  "message": "راجل محترم والتعامل معاه قمة فى الشفافية"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "headers": {
+              "X-Powered-By": {
+                "schema": {
+                  "type": "string",
+                  "example": "Express"
+                }
+              },
+              "Access-Control-Allow-Origin": {
+                "schema": {
+                  "type": "string",
+                  "example": "*"
+                }
+              },
+              "Content-Type": {
+                "schema": {
+                  "type": "string",
+                  "example": "application/json; charset=utf-8"
+                }
+              },
+              "Content-Length": {
+                "schema": {
+                  "type": "integer",
+                  "example": "261"
+                }
+              },
+              "ETag": {
+                "schema": {
+                  "type": "string",
+                  "example": "W/\"105-dwsa2R3Vu5TIqynNa/VAHB3ltdA\""
+                }
+              },
+              "Date": {
+                "schema": {
+                  "type": "string",
+                  "example": "Sat, 25 Jan 2025 15:19:37 GMT"
+                }
+              },
+              "Connection": {
+                "schema": {
+                  "type": "string",
+                  "example": "keep-alive"
+                }
+              },
+              "Keep-Alive": {
+                "schema": {
+                  "type": "string",
+                  "example": "timeout=5"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                },
+                "example": {
+                  "message": "Rating added successfully!",
+                  "ratings": [
+                    {
+                      "ratedBy": "6795003070a40bca20db877b",
+                      "rating": 5,
+                      "message": "راجل محترم والتعامل معاه قمة فى الشفافية",
+                      "_id": "6795010970a40bca20db8788",
+                      "createdAt": "2025-01-25T15:19:37.380Z"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/profile/ratings": {
+      "get": {
+        "tags": ["User"],
+        "summary": "Get Ratings List",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "headers": {
+              "X-Powered-By": {
+                "schema": {
+                  "type": "string",
+                  "example": "Express"
+                }
+              },
+              "Access-Control-Allow-Origin": {
+                "schema": {
+                  "type": "string",
+                  "example": "*"
+                }
+              },
+              "Content-Type": {
+                "schema": {
+                  "type": "string",
+                  "example": "application/json; charset=utf-8"
+                }
+              },
+              "Content-Length": {
+                "schema": {
+                  "type": "integer",
+                  "example": "327"
+                }
+              },
+              "ETag": {
+                "schema": {
+                  "type": "string",
+                  "example": "W/\"147-fI0nUfKJukGZsvStbf7pzV2kBXE\""
+                }
+              },
+              "Date": {
+                "schema": {
+                  "type": "string",
+                  "example": "Sat, 25 Jan 2025 15:25:04 GMT"
+                }
+              },
+              "Connection": {
+                "schema": {
+                  "type": "string",
+                  "example": "keep-alive"
+                }
+              },
+              "Keep-Alive": {
+                "schema": {
+                  "type": "string",
+                  "example": "timeout=5"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                },
+                "example": {
+                  "message": "Rating statistics fetched successfully",
+                  "ratings": [
+                    {
+                      "ratedBy": "6795003070a40bca20db877b",
+                      "rating": 5,
+                      "message": "راجل محترم والتعامل معاه قمة فى الشفافية",
+                      "_id": "6795010970a40bca20db8788",
+                      "createdAt": "2025-01-25T15:19:37.380Z"
+                    }
+                  ],
+                  "ratingPercentages": {
+                    "1": 0,
+                    "2": 0,
+                    "3": 0,
+                    "4": 0,
+                    "5": 100
+                  }
                 }
               }
             }

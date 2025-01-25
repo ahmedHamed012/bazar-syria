@@ -8,6 +8,8 @@ const {
   followUser,
   getMyFollowers,
   getMyFollowings,
+  rateUser,
+  getUserRatingsStatistics,
 } = require("./user.controller");
 const userValidationSchema = require("./user.validation");
 const validate = require("../../utils/validationMiddleware");
@@ -24,20 +26,23 @@ const storage = multer.diskStorage({
 });
 const upload = multer({ storage: storage });
 
-router.get("/all", getAllUsers);
-router.get("/:id", getUserById);
-// Protected Routes
 router.post(
   "/",
   upload.single("avatar"),
   validate(userValidationSchema),
   createNewUser
 );
-router.use(protect);
-router.get("/profile/followers", getMyFollowers);
-router.get("/profile/followings", getMyFollowings);
-router.post("/:id/follow", followUser);
+//TODO: Add Administration Restriction
+router.get("/all", getAllUsers);
+router.get("/:id", getUserById);
 router.patch("/:id", upload.single("avatar"), updateUserById);
 router.delete("/:id", deleteUserById);
+// Protected Routes
+router.use(protect); // Protect This Routes That It can't be run without token
+router.post("/:id/follow", followUser);
+router.get("/profile/followers", getMyFollowers);
+router.get("/profile/followings", getMyFollowings);
+router.post("/:id/rate", rateUser);
+router.get("/profile/ratings", getUserRatingsStatistics);
 
 module.exports = router;

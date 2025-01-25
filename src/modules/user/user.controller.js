@@ -97,17 +97,16 @@ const deleteUserById = catchAsync(async (req, res, next) => {
 //---------------------------------------------------------------------------------------
 const followUser = catchAsync(async (req, res, next) => {
   const { id } = req.params; // ID of the user to be followed
-  const myId = req.user.memberId; // Current user's ID
+  const myId = req.user.id; // Current user's ID
 
   // Find the user to be followed
   const user = await User.findOne({ memberId: id, isDeleted: false });
-  console.log(user);
+
   if (!user) {
     return res.status(404).json({ message: "User not found" });
   }
-
   // Find the current user's data
-  const myData = await User.findOne({ memberId: myId, isDeleted: false });
+  const myData = await User.findOne({ _id: myId, isDeleted: false });
   if (!myData) {
     return res.status(404).json({ message: "Your account was not found" });
   }
@@ -170,6 +169,93 @@ const getMyFollowings = catchAsync(async (req, res, next) => {
     .json({ following: followingDetails, length: user.following.length });
 });
 //---------------------------------------------------------------------------------------
+const rateUser = catchAsync(async (req, res, next) => {
+  const { id } = req.params; // ID of the user being rated
+  const { rate, message } = req.body; // Rating and optional message
+  const currentUserId = req.user.id; // ID of the user giving the rating
+
+  // Validate the rating (ensure it's between 1 and 5)
+  if (rate < 1 || rate > 5) {
+    return res
+      .status(400)
+      .json({ message: "Rating must be between 1 and 5 stars" });
+  }
+
+  // Find the user to be rated
+  const userToRate = await User.findById(id);
+  if (!userToRate) {
+    return res.status(404).json({ message: "User not found" });
+  }
+
+  // Check if the current user is trying to rate themselves
+  if (id === currentUserId) {
+    return res.status(400).json({ message: "You cannot rate yourself" });
+  }
+
+  // Add the rating to the target user's ratings
+  userToRate.ratings.push({
+    ratedBy: currentUserId,
+    rating: rate,
+    message: message || "",
+  });
+
+  // Save the updated user data
+  await userToRate.save();
+
+  // Respond with success
+  res.status(200).json({
+    message: "Rating added successfully!",
+    ratings: userToRate.ratings,
+  });
+});
+//---------------------------------------------------------------------------------------
+const getUserRatingsStatistics = catchAsync(async (req, res, next) => {
+  const id = req.body.id ? req.body.id : req.user.id; // ID of the user whose ratings are being fetched
+
+  // Find the user by ID
+  const user = await User.findById(id);
+  if (!user) {
+    return res.status(404).json({ message: "User not found" });
+  }
+
+  // If the user has no ratings, return an empty object with 0 percentages
+  if (user.ratings.length === 0) {
+    return res.status(200).json({
+      message: "No ratings available",
+      ratingPercentages: {
+        1: 0,
+        2: 0,
+        3: 0,
+        4: 0,
+        5: 0,
+      },
+    });
+  }
+
+  // Calculate the total number of ratings
+  const totalRatings = user.ratings.length;
+
+  // Calculate the count for each rating degree (1, 2, 3, 4, 5)
+  const ratingCounts = [1, 2, 3, 4, 5].reduce((acc, rating) => {
+    acc[rating] = user.ratings.filter((r) => r.rating === rating).length;
+    return acc;
+  }, {});
+
+  // Calculate the percentage for each rating degree
+  const ratingPercentages = [1, 2, 3, 4, 5].reduce((acc, rating) => {
+    acc[rating] = Math.ceil((ratingCounts[rating] / totalRatings) * 100);
+    return acc;
+  }, {});
+
+  // Respond with the rating percentages
+  res.status(200).json({
+    message: "Rating statistics fetched successfully",
+    ratings: user.ratings,
+    ratingPercentages,
+  });
+});
+
+//---------------------------------------------------------------------------------------
 module.exports = {
   createNewUser,
   getAllUsers,
@@ -179,4 +265,6 @@ module.exports = {
   followUser,
   getMyFollowers,
   getMyFollowings,
+  rateUser,
+  getUserRatingsStatistics,
 };

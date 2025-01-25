@@ -19,9 +19,11 @@ const storage = multer.diskStorage({
 });
 const upload = multer({ storage: storage });
 
+//TODO: Add Administration Restriction
 router.post("/", upload.single("icon"), createSubCategory);
 router.get("/all", getAllSubCategories);
 router.get("/:id", getSubCategoryById);
 router.patch("/:id", upload.single("icon"), updateSubCategoryById);
 router.delete("/:id", deleteSubCategoryById);
+
 module.exports = router;

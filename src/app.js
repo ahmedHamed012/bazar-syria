@@ -1,13 +1,15 @@
 const express = require("express");
+const path = require("path");
 const cors = require("cors");
 const swaggerUi = require("swagger-ui-express");
 const swaggerSpec = require("./config/swaggerOptions");
-const swaggerJSON = require("./utils/swagger.json");
+const swaggerJSON = require("../public/swagger.json");
 const app = express();
 
 // Middlewares
 app.use(express.json());
 app.use(cors());
+app.use(express.static(path.join(__dirname, "public")));
 
 // Swagger documentation route
 app.use("/docs", swaggerUi.serve, swaggerUi.setup(swaggerJSON));

@@ -2,7 +2,7 @@ const express = require("express");
 const router = express.Router();
 const passport = require("passport");
 const jwt = require("jsonwebtoken");
-const { googleCallback } = require("./auth.controller");
+const { googleCallback, login } = require("./auth.controller");
 
 // Redirect to Google OAuth consent page
 router.get(
@@ -16,5 +16,7 @@ router.get(
   passport.authenticate("google", { session: false }),
   googleCallback
 );
+
+router.post("/login", login);
 
 module.exports = router;

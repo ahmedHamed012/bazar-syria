@@ -6,19 +6,19 @@
   },
   "servers": [
     {
-      "url": "http://{{url}}auth"
+      "url": "https://bazar-syria.vercel.app/auth"
     },
     {
-      "url": "http://{{url}}user"
+      "url": "https://bazar-syria.vercel.app/user"
     },
     {
-      "url": "http://{{url}}category"
+      "url": "https://bazar-syria.vercel.app/category"
     },
     {
-      "url": "http://{{url}}subcategory"
+      "url": "https://bazar-syria.vercel.app/subcategory"
     },
     {
-      "url": "http://{{url}}products"
+      "url": "https://bazar-syria.vercel.app/products"
     }
   ],
   "components": {

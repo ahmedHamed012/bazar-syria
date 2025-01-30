@@ -4,6 +4,7 @@
   "description": "Backend Service For Bazar Syria Website",
   "main": "server.js",
   "scripts": {
+    "start:dev": "nodemon server",
     "start": "node server"
   },
   "author": "Quill Agency",

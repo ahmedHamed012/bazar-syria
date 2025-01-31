@@ -123,13 +123,28 @@ const updateAdvertisementById = catchAsync(async (req, res, next) => {
 //---------------------------------------------------------------------------------------
 const deleteAdvertisementById = catchAsync(async (req, res, next) => {
   const { id } = req.params;
+  const currentUser = req.user.id;
+  const user = await findUserByIdHelperFn(currentUser);
+
+  if (!user) {
+    return res.status(404).json({ message: "User not found" });
+  }
+
   const advertisement = await Advertisement.findOne({
     _id: id,
     isDeleted: false,
   });
+
   if (!advertisement || advertisement.length === 0) {
     return res.status(404).json({ message: "Advertisement not found" });
   }
+
+  if (advertisement.creator.toString() !== user._id.toString()) {
+    return res
+      .status(404)
+      .json({ message: "You are not allowed to delete this advertisement" });
+  }
+
   await Advertisement.findOneAndUpdate({ _id: id }, { isDeleted: true });
 
   res.status(200).json({ message: "Advertisement deleted successfully" });

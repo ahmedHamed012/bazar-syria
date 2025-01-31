@@ -2,6 +2,7 @@ const express = require("express");
 const {
   createAdvertisement,
   getAdvertisementById,
+  getAllAds,
 } = require("./adv.controller");
 const router = express.Router();
 const multer = require("multer");
@@ -18,6 +19,7 @@ const storage = multer.diskStorage({
 const upload = multer({ storage: storage });
 
 router.use(protect);
+router.get("/all", getAllAds);
 router.post("/", upload.array("gallery"), createAdvertisement);
 router.get("/:id", getAdvertisementById);
 

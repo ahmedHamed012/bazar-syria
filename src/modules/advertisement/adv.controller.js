@@ -41,6 +41,19 @@ const createAdvertisement = catchAsync(async (req, res, next) => {
     .json({ message: "Advertisement created successfully" });
 });
 //--------------------------------------------------------------------------------------
+const getAllAds = catchAsync(async (req, res, next) => {
+  const currentUser = req.user.id;
+  const user = await findUserByIdHelperFn(currentUser);
+  const advertisements = await Advertisement.find({
+    creator: user._id,
+    isDeleted: false,
+  }).select("-isDeleted");
+  if (!advertisements || advertisements.length === 0) {
+    return res.status(404).json({ message: "No Ads. found" });
+  }
+  res.status(200).json({ advertisements });
+});
+//--------------------------------------------------------------------------------------
 const getAdvertisementById = catchAsync(async (req, res, next) => {
   const { id } = req.params;
   const advertisement = await Advertisement.find({
@@ -52,4 +65,4 @@ const getAdvertisementById = catchAsync(async (req, res, next) => {
   }
   res.status(200).json({ advertisement: advertisement[0] });
 });
-module.exports = { getAdvertisementById, createAdvertisement };
+module.exports = { getAdvertisementById, createAdvertisement, getAllAds };

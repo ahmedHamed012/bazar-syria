@@ -65,4 +65,81 @@ const getAdvertisementById = catchAsync(async (req, res, next) => {
   }
   res.status(200).json({ advertisement: advertisement[0] });
 });
-module.exports = { getAdvertisementById, createAdvertisement, getAllAds };
+//---------------------------------------------------------------------------------------
+const updateAdvertisementById = catchAsync(async (req, res, next) => {
+  const { id } = req.params;
+  const newAdvData = req.body;
+  const currentUser = req.user.id;
+  const user = await findUserByIdHelperFn(currentUser);
+  if (!user) {
+    return res.status(404).json({ message: "User not found" });
+  }
+  const gallery = req.files.map((file) => file.path);
+
+  const advertisement = await Advertisement.findOne({ _id: id });
+  if (!advertisement) {
+    return res.status(404).json({ message: "Advertisement not found" });
+  }
+
+  //Check if this ad is valid for current user
+  if (advertisement.creator.toString() !== user._id.toString()) {
+    return res
+      .status(404)
+      .json({ message: "You are not allowed to update this advertisement" });
+  }
+
+  // Check Existence of Category
+  if (newAdvData.category) {
+    const category = await Category.findOne({ _id: newAdvData.category });
+    if (!category) {
+      return res.status(404).json({ message: "Category not found" });
+    }
+  }
+
+  // Check Existence of SubCategory
+  if (newAdvData.subCategory) {
+    const subCategory = await SubCategory.findOne({
+      _id: newAdvData.subCategory,
+    });
+    if (!subCategory) {
+      return res.status(404).json({ message: "SubCategory not found" });
+    }
+  }
+
+  const updatedAdvertisement = await Advertisement.findOneAndUpdate(
+    { _id: id },
+    {
+      ...newAdvData,
+      gallery: gallery.length > 0 ? gallery : advertisement.gallery,
+      modifiedAt: new Date().getTime(),
+    },
+    { new: true }
+  );
+  res.status(200).json({
+    message: "Advertisement updated successfully",
+    updatedAdvertisement,
+  });
+});
+//---------------------------------------------------------------------------------------
+const deleteAdvertisementById = catchAsync(async (req, res, next) => {
+  const { id } = req.params;
+  const advertisement = await Advertisement.findOne({
+    _id: id,
+    isDeleted: false,
+  });
+  if (!advertisement || advertisement.length === 0) {
+    return res.status(404).json({ message: "Advertisement not found" });
+  }
+  await Advertisement.findOneAndUpdate({ _id: id }, { isDeleted: true });
+
+  res.status(200).json({ message: "Advertisement deleted successfully" });
+});
+//---------------------------------------------------------------------------------------
+
+module.exports = {
+  getAdvertisementById,
+  createAdvertisement,
+  getAllAds,
+  updateAdvertisementById,
+  deleteAdvertisementById,
+};

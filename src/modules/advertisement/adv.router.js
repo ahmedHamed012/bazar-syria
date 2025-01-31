@@ -3,6 +3,8 @@ const {
   createAdvertisement,
   getAdvertisementById,
   getAllAds,
+  updateAdvertisementById,
+  deleteAdvertisementById,
 } = require("./adv.controller");
 const router = express.Router();
 const multer = require("multer");
@@ -22,5 +24,7 @@ router.use(protect);
 router.get("/all", getAllAds);
 router.post("/", upload.array("gallery"), createAdvertisement);
 router.get("/:id", getAdvertisementById);
+router.patch("/:id", upload.array("gallery"), updateAdvertisementById);
+router.delete("/:id", deleteAdvertisementById);
 
 module.exports = router;

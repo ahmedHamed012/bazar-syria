@@ -9,6 +9,7 @@ const {
 const router = express.Router();
 const multer = require("multer");
 const { protect } = require("../auth/auth.controller");
+const addWaterMark = require("../../utils/addWaterMark");
 
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
@@ -22,9 +23,14 @@ const upload = multer({ storage: storage });
 
 router.use(protect);
 router.get("/all", getAllAds);
-router.post("/", upload.array("gallery"), createAdvertisement);
+router.post("/", upload.array("gallery"), addWaterMark, createAdvertisement);
 router.get("/:id", getAdvertisementById);
-router.patch("/:id", upload.array("gallery"), updateAdvertisementById);
+router.patch(
+  "/:id",
+  upload.array("gallery"),
+  addWaterMark,
+  updateAdvertisementById
+);
 router.delete("/:id", deleteAdvertisementById);
 
 module.exports = router;

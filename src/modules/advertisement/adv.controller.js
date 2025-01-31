@@ -8,7 +8,7 @@ const { findUserByIdHelperFn } = require("../../utils/helper-functions");
 const createAdvertisement = catchAsync(async (req, res, next) => {
   const advData = req.body;
   const creator = req.user.id;
-  const gallery = req.files.map((file) => file.path);
+  const gallery = req.processedFiles ? req.processedFiles : [];
 
   // Check Existence of Creator
   const user = await findUserByIdHelperFn(creator);
@@ -74,7 +74,7 @@ const updateAdvertisementById = catchAsync(async (req, res, next) => {
   if (!user) {
     return res.status(404).json({ message: "User not found" });
   }
-  const gallery = req.files.map((file) => file.path);
+  const gallery = req.processedFiles ? req.processedFiles : [];
 
   const advertisement = await Advertisement.findOne({ _id: id });
   if (!advertisement) {

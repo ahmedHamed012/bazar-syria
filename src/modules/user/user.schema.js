@@ -77,6 +77,7 @@ const userSchema = mongoose.Schema({
     },
   ],
   ratings: [ratingSchema], // Array of ratings
+  verified: { type: Boolean, default: false },
   isDeleted: {
     type: Boolean,
     default: false,

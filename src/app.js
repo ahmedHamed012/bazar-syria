@@ -28,5 +28,9 @@ app.use("/user", require("./modules/user/user.router"));
 app.use("/category", require("./modules/category/category.router"));
 app.use("/subCategory", require("./modules/subcategory/sub-category.router"));
 app.use("/advertisement", require("./modules/advertisement/adv.router"));
+app.use(
+  "/verification",
+  require("./modules/verification-requests/verification.router")
+);
 
 module.exports = app;

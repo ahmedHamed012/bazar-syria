@@ -99,7 +99,15 @@ const protect = catchAsync(async (req, res, next) => {
   next();
 });
 //-----------------------------------------------------------------------------------------
-
+const adminRestriction = catchAsync(async (req, res, next) => {
+  if (!req.user.role || req.user.role !== "admin") {
+    return res
+      .status(401)
+      .json({ message: "You are not authorized for this action" });
+  }
+  next();
+});
+//-----------------------------------------------------------------------------------------
 const forgotPassword = catchAsync(async (req, res, next) => {
   //1)- Get The User From the provided email
   const email = req.body.email;
@@ -289,4 +297,5 @@ module.exports = {
   protect,
   forgotPassword,
   resetPassword,
+  adminRestriction,
 };

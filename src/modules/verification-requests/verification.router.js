@@ -11,7 +11,7 @@ const router = express.Router();
 // Multer for file uploads
 const multer = require("multer");
 const addWaterMark = require("../../utils/addWaterMark");
-const { protect } = require("../auth/auth.controller");
+const { protect, adminRestriction } = require("../auth/auth.controller");
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
     cb(null, "./public/verification-attachments/");
@@ -37,6 +37,7 @@ router.post(
 
 router.get("/all", getAllVerifyRequests);
 router.get("/:id", getVerifyRequestById);
+router.use(adminRestriction);
 router.post("/:id/approve", approveRequest);
 router.post("/:id/reject", rejectRequest);
 

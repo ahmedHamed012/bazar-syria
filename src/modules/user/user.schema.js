@@ -78,6 +78,11 @@ const userSchema = mongoose.Schema({
   ],
   ratings: [ratingSchema], // Array of ratings
   verified: { type: Boolean, default: false },
+  role: {
+    type: String,
+    enum: ["admin", "user"],
+    required: true,
+  },
   isDeleted: {
     type: Boolean,
     default: false,

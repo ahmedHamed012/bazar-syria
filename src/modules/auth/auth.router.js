@@ -7,6 +7,8 @@ const {
   login,
   forgotPassword,
   resetPassword,
+  getMyProfile,
+  protect,
 } = require("./auth.controller");
 
 // Redirect to Google OAuth consent page
@@ -21,9 +23,9 @@ router.get(
   passport.authenticate("google", { session: false }),
   googleCallback
 );
-
 router.post("/login", login);
 router.post("/password/forget", forgotPassword);
 router.post("/password/reset/:token", resetPassword);
-
+router.use(protect);
+router.get("/profile", getMyProfile);
 module.exports = router;

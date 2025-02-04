@@ -4,7 +4,10 @@ const User = require("../user/user.schema");
 const bcrypt = require("bcrypt");
 const crypto = require("crypto");
 const { promisify } = require("util");
-
+const {
+  findUserByMemberIdHelperFn,
+  findUserByIdHelperFn,
+} = require("../../utils/helper-functions");
 const googleCallback = catchAsync(async (req, res, next) => {
   const payload = {
     id: req.user.id,
@@ -290,7 +293,11 @@ const resetPassword = catchAsync(async (req, res, next) => {
   res.status(200).json({ token: jwtToken });
 });
 //-----------------------------------------------------------------------------------------
-
+const getMyProfile = catchAsync(async (req, res, next) => {
+  const { id } = req.user;
+  const user = await findUserByIdHelperFn(id);
+  res.status(200).json({ user });
+});
 module.exports = {
   googleCallback,
   login,
@@ -298,4 +305,5 @@ module.exports = {
   forgotPassword,
   resetPassword,
   adminRestriction,
+  getMyProfile,
 };

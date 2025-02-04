@@ -13,6 +13,12 @@ app.use(express.json());
 app.use(cors());
 app.use(express.static(path.join(__dirname, "public")));
 
+const server = http.createServer(app);
+const io = socketIo(server);
+app.use((req, res, next) => {
+  req.io = io;
+  next();
+});
 // Swagger documentation route
 app.use(
   "/docs",
@@ -35,12 +41,6 @@ app.use(
 );
 app.use("/chat", require("./modules/chat/chat.router"));
 // Socket Connection
-const server = http.createServer(app);
-const io = socketIo(server);
-app.use((req, res, next) => {
-  req.io = io;
-  next();
-});
 io.on("connection", (socket) => {
   console.log("New client connected:", socket.id);
 

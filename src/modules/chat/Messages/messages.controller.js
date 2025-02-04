@@ -4,7 +4,7 @@ const Chat = require("../chat.schema");
 
 exports.sendMessage = catchAsync(async (req, res) => {
   const { chatId, sender, content } = req.body;
-  const attachment = req.file ? `/uploads/${req.file.filename}` : null;
+  const attachment = req.file ? req.file.path : null;
 
   const message = new Message({ chatId, sender, content, attachment });
   await message.save();

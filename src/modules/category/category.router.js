@@ -10,10 +10,10 @@ const {
 const { adminRestriction, protect } = require("../auth/auth.controller");
 
 //TODO: Add Administration Restriction
+router.get("/all", getAllCategories);
 router.use(protect);
 router.use(adminRestriction);
 router.post("/", createCategory);
-router.get("/all", getAllCategories);
 router.get("/:id", getCategoryById);
 router.patch("/:id", updateCategoryById);
 router.delete("/:id", deleteCategoryById);

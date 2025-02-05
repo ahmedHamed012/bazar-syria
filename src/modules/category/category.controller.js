@@ -38,7 +38,9 @@ const getAllCategories = catchAsync(async (req, res, next) => {
     "-isDeleted"
   );
   if (!categories || categories.length === 0) {
-    return res.status(404).json({ message: "No categories found" });
+    return res
+      .status(200)
+      .json({ message: "No categories found", categories: [] });
   }
   res.status(200).json({ categories });
 });

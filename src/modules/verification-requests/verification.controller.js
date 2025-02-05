@@ -62,7 +62,12 @@ const getAllVerifyRequests = catchAsync(async (req, res, next) => {
     .populate("userId")
     .select("-isDeleted");
   if (!verificationRequests || verificationRequests.length === 0) {
-    return res.status(404).json({ message: "No verification Requests found" });
+    return res
+      .status(200)
+      .json({
+        message: "No verification Requests found",
+        verificationRequests: [],
+      });
   }
   res.status(200).json({ verificationRequests });
 });
@@ -122,11 +127,9 @@ const rejectRequest = catchAsync(async (req, res, next) => {
     verificationRequest.length === 0 ||
     verificationRequest[0].status !== "pending"
   ) {
-    return res
-      .status(404)
-      .json({
-        message: "Verification Request not found or not in pending status",
-      });
+    return res.status(404).json({
+      message: "Verification Request not found or not in pending status",
+    });
   }
 
   await User.findOneAndUpdate(

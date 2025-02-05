@@ -40,7 +40,7 @@ const getAllUsers = catchAsync(async (req, res, next) => {
     "-googleId -password -isDeleted"
   );
   if (!users || users.length === 0) {
-    return res.status(404).json({ message: "No users found" });
+    return res.status(200).json({ message: "No users found", users: [] });
   }
   res.status(200).json({ users });
 });

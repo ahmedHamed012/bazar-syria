@@ -37,7 +37,7 @@ const getAllProducts = catchAsync(async (req, res, next) => {
     "-isDeleted"
   );
   if (!products || products.length === 0) {
-    return res.status(404).json({ message: "No products found" });
+    return res.status(200).json({ message: "No products found", products: [] });
   }
   res.status(200).json({ products });
 });

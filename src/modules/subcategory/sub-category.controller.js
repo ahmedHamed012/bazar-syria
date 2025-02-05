@@ -42,7 +42,9 @@ const getAllSubCategories = catchAsync(async (req, res, next) => {
     "-isDeleted"
   );
   if (!subCategories || subCategories.length === 0) {
-    return res.status(404).json({ message: "No subCategories found" });
+    return res
+      .status(200)
+      .json({ message: "No subCategories found", subCategories: [] });
   }
   res.status(200).json({ subCategories });
 });

@@ -8,7 +8,7 @@ const { findUserByIdHelperFn } = require("../../utils/helper-functions");
 const createAdvertisement = catchAsync(async (req, res, next) => {
   const advData = req.body;
   const creator = req.user.id;
-  const gallery = req.processedFiles ? req.processedFiles : [];
+  const gallery = req.processedImages;
 
   // Check Existence of Creator
   const user = await findUserByIdHelperFn(creator);
@@ -27,7 +27,6 @@ const createAdvertisement = catchAsync(async (req, res, next) => {
   if (!subCategory) {
     return res.status(404).json({ message: "SubCategory not found" });
   }
-
   // Create Advertisement
   const advertisement = new Advertisement({
     ...advData,
@@ -41,7 +40,7 @@ const createAdvertisement = catchAsync(async (req, res, next) => {
     .json({ message: "Advertisement created successfully" });
 });
 //--------------------------------------------------------------------------------------
-const getAllAds = catchAsync(async (req, res, next) => {
+const getMyAds = catchAsync(async (req, res, next) => {
   const currentUser = req.user.id;
   const user = await findUserByIdHelperFn(currentUser);
   const advertisements = await Advertisement.find({
@@ -53,8 +52,67 @@ const getAllAds = catchAsync(async (req, res, next) => {
       .status(200)
       .json({ message: "No Ads. found", advertisements: [] });
   }
+  advertisements.forEach((adv) => {
+    adv.gallery = adv.gallery.map(
+      (image) => `${process.env.ATTACHMENTS_URL}${image.slice(9, image.length)}`
+    );
+  });
   res.status(200).json({ advertisements });
 });
+//--------------------------------------------------------------------------------------
+const getAllAds = catchAsync(async (req, res, next) => {
+  const advertisements = await Advertisement.find({
+    isDeleted: false,
+  }).select("-isDeleted");
+  if (!advertisements || advertisements.length === 0) {
+    return res
+      .status(200)
+      .json({ message: "No Ads. found", advertisements: [] });
+  }
+  advertisements.forEach((adv) => {
+    adv.gallery = adv.gallery.map(
+      (image) => `${process.env.ATTACHMENTS_URL}${image.slice(9, image.length)}`
+    );
+  });
+  res.status(200).json({ advertisements });
+});
+//--------------------------------------------------------------------------------------
+const getAddsByCategoriesAndSubcategories = catchAsync(
+  async (req, res, next) => {
+    const queryData = req.query;
+    if (!queryData.category) {
+      return res.status(400).json({
+        message: "You must provide at least category id",
+      });
+    }
+    if (queryData.category && !queryData.subCategory) {
+      const advertisements = await Advertisement.find({
+        category: queryData.category,
+        isDeleted: false,
+      }).select("-isDeleted");
+      if (!advertisements || advertisements.length === 0) {
+        return res
+          .status(200)
+          .json({ message: "No Ads. found", advertisements: [] });
+      }
+      return res.status(200).json({ advertisements });
+    }
+    const adsWithCategoriesAndSubcategories = await Advertisement.find({
+      category: queryData.category,
+      subCategory: queryData.subCategory,
+      isDeleted: false,
+    }).select("-isDeleted");
+    if (
+      !adsWithCategoriesAndSubcategories ||
+      adsWithCategoriesAndSubcategories.length === 0
+    ) {
+      return res
+        .status(200)
+        .json({ message: "No Ads. found", advertisements: [] });
+    }
+    res.status(200).json({ advertisements: adsWithCategoriesAndSubcategories });
+  }
+);
 //--------------------------------------------------------------------------------------
 const getAdvertisementById = catchAsync(async (req, res, next) => {
   const { id } = req.params;
@@ -65,6 +123,11 @@ const getAdvertisementById = catchAsync(async (req, res, next) => {
   if (!advertisement || advertisement.length === 0) {
     return res.status(404).json({ message: "Advertisement not found" });
   }
+  advertisement.forEach((adv) => {
+    adv.gallery = adv.gallery.map(
+      (image) => `${process.env.ATTACHMENTS_URL}${image.slice(9, image.length)}`
+    );
+  });
   res.status(200).json({ advertisement: advertisement[0] });
 });
 //---------------------------------------------------------------------------------------
@@ -107,6 +170,10 @@ const updateAdvertisementById = catchAsync(async (req, res, next) => {
       return res.status(404).json({ message: "SubCategory not found" });
     }
   }
+
+  gallery = gallery.map(
+    (image) => `${process.env.ATTACHMENTS_URL}${image.slice(9, image.length)}`
+  );
 
   const updatedAdvertisement = await Advertisement.findOneAndUpdate(
     { _id: id },
@@ -156,7 +223,9 @@ const deleteAdvertisementById = catchAsync(async (req, res, next) => {
 module.exports = {
   getAdvertisementById,
   createAdvertisement,
+  getMyAds,
   getAllAds,
+  getAddsByCategoriesAndSubcategories,
   updateAdvertisementById,
   deleteAdvertisementById,
 };

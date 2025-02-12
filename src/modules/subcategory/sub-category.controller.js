@@ -1,6 +1,7 @@
 const catchAsync = require("../../utils/catchAsync");
 const SubCategory = require("./sub-category.schema");
 const Product = require("../product/product.schema");
+const Category = require("../category/category.schema");
 //-----------------------------------------------------------------------------------------
 
 const createSubCategory = catchAsync(async (req, res, next) => {
@@ -25,6 +26,12 @@ const createSubCategory = catchAsync(async (req, res, next) => {
     }
   }
 
+  // Check Existence of Category
+  const category = await Category.findOne({ _id: subCategoryData.categoryId });
+  if (!category) {
+    return res.status(404).json({ message: "Category not found" });
+  }
+
   const newSubCategory = await new SubCategory({
     ...subCategoryData,
     icon: icon ? icon.filename : null,
@@ -46,6 +53,16 @@ const getAllSubCategories = catchAsync(async (req, res, next) => {
       .status(200)
       .json({ message: "No subCategories found", subCategories: [] });
   }
+  subCategories.forEach((subcategory) => {
+    if (subcategory.icon) {
+      subcategory.icon = `${
+        process.env.ATTACHMENTS_URL
+      }subCategory-icons/${String(subcategory.icon).slice(
+        9,
+        String(subcategory.icon).length
+      )}`;
+    }
+  });
   res.status(200).json({ subCategories });
 });
 //-----------------------------------------------------------------------------------------
@@ -58,9 +75,43 @@ const getSubCategoryById = catchAsync(async (req, res, next) => {
   if (!subCategory || subCategory.length === 0) {
     return res.status(404).json({ message: "SubCategory not found" });
   }
+  subCategory.forEach((subcategory) => {
+    if (subcategory.icon) {
+      subcategory.icon = `${
+        process.env.ATTACHMENTS_URL
+      }subCategory-icons/${String(subcategory.icon).slice(
+        9,
+        String(subcategory.icon).length
+      )}`;
+    }
+  });
   res.status(200).json({ subCategory: subCategory[0] });
 });
-//-----------------------------------------------------------------------------------------
+//------------------------------------------------------------------------------------------
+const getSubCategoryByCategoryId = catchAsync(async (req, res, next) => {
+  const { categoryId } = req.params;
+  const subCategories = await SubCategory.find({
+    categoryId: categoryId,
+    isDeleted: false,
+  }).select("-isDeleted");
+  if (!subCategories || subCategories.length === 0) {
+    return res
+      .status(200)
+      .json({ message: "No subCategories found", subCategories: [] });
+  }
+  subCategories.forEach((subcategory) => {
+    if (subcategory.icon) {
+      subcategory.icon = `${
+        process.env.ATTACHMENTS_URL
+      }subCategory-icons/${String(subcategory.icon).slice(
+        9,
+        String(subcategory.icon).length
+      )}`;
+    }
+  });
+  res.status(200).json({ subCategories });
+});
+//------------------------------------------------------------------------------------------
 const updateSubCategoryById = catchAsync(async (req, res, next) => {
   const { id } = req.params;
   const icon = req.file;
@@ -110,4 +161,5 @@ module.exports = {
   getSubCategoryById,
   updateSubCategoryById,
   deleteSubCategoryById,
+  getSubCategoryByCategoryId,
 };

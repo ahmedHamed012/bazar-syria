@@ -15,11 +15,10 @@ const storage = multer.diskStorage({
 });
 const upload = multer({ storage: storage });
 
+router.get("/messages/:chatId", getMessages);
+router.post("/messages", upload.single("attachment"), sendMessage);
 router.use(protect);
 router.post("/", createChat);
 router.get("/", getUserChats);
-
-router.post("/messages", upload.single("attachment"), sendMessage);
-router.get("/messages/:chatId", getMessages);
 
 module.exports = router;

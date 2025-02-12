@@ -16,9 +16,18 @@ io.on("connection", (socket) => {
   console.log(`🟢 New client connected: ${socket.id}`);
 
   // Client joins a chat room
-  socket.on("joinChat", (chatId) => {
-    socket.join(chatId);
-    console.log(`User ${socket.id} joined chat ${chatId}`);
+  socket.on("joinChat", async (chatId) => {
+    socket.join(chatId.chatId);
+    console.log(`User ${socket.id} joined chat ${chatId.chatId}`);
+    try {
+      // Fetch previous messages from API
+      const messages = await fetchChatHistory(chatId.chatId);
+      socket.emit("chatHistory", messages);
+    } catch (error) {
+      console.error("Error fetching chat history:", error);
+      socket.emit("error", { message: "Failed to fetch chat history" });
+    }
+
     socket.emit("joinedChat", { chatId, message: "You joined the chat." });
   });
 
@@ -31,7 +40,7 @@ io.on("connection", (socket) => {
     }
 
     try {
-      // Save Message in Database (REST API Simulation)
+      // Save Message in Database
       const savedMessage = await saveMessageToDatabase(
         chatId,
         senderId,
@@ -40,6 +49,9 @@ io.on("connection", (socket) => {
 
       // Broadcast Message to Other Users in the Chat
       socket.to(chatId).emit("receiveMessage", savedMessage);
+
+      // Send the message back to the sender as well
+      socket.emit("receiveMessage", savedMessage);
     } catch (error) {
       console.error("Error saving message:", error);
       socket.emit("error", { message: "Failed to send message" });
@@ -52,13 +64,30 @@ io.on("connection", (socket) => {
   });
 });
 
+// Function to Fetch Chat History (Using REST API)
+async function fetchChatHistory(chatId) {
+  try {
+    const response = await fetch(
+      `https://pzsyria.com/api/chat/messages/${chatId}`
+    );
+    if (!response.ok) {
+      throw new Error("Failed to fetch chat history");
+    }
+    return await response.json(); // Return chat history
+  } catch (error) {
+    throw error;
+  }
+}
+
 // Function to Save Message in Database (Using REST API)
 async function saveMessageToDatabase(chatId, senderId, message) {
   try {
-    const response = await fetch("https://pzsyria.com/api/chat/sendMessage", {
+    const response = await fetch("https://pzsyria.com/api/chat/messages", {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ chatId, senderId, message }),
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ chatId, sender: senderId, content: message }),
     });
 
     if (!response.ok) {

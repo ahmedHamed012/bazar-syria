@@ -6,6 +6,7 @@ const {
   getSubCategoryById,
   updateSubCategoryById,
   deleteSubCategoryById,
+  getSubCategoryByCategoryId,
 } = require("./sub-category.controller");
 
 const multer = require("multer");
@@ -22,10 +23,11 @@ const upload = multer({ storage: storage });
 
 //TODO: Add Administration Restriction
 router.get("/all", getAllSubCategories);
+router.get("/:id", getSubCategoryById);
+router.get("/:categoryId/subcategories", getSubCategoryByCategoryId);
 router.use(protect);
 router.use(adminRestriction);
 router.post("/", upload.single("icon"), createSubCategory);
-router.get("/:id", getSubCategoryById);
 router.patch("/:id", upload.single("icon"), updateSubCategoryById);
 router.delete("/:id", deleteSubCategoryById);
 

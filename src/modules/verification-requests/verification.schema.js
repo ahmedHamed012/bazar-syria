@@ -42,7 +42,6 @@ const PersonalVerification = VerificationRequest.discriminator(
     identificationFront: { type: String, required: true }, // File path
     identificationBack: { type: String, required: true }, // File path
     faceFrontSide: { type: String, required: true }, // File path
-    faceLeftSide: { type: String, required: true }, // File path
   })
 );
 
@@ -51,6 +50,14 @@ const OrganizationVerification = VerificationRequest.discriminator(
   "organization",
   new mongoose.Schema({
     businessProfile: { type: String, required: true }, // File path
+    companyName: { type: String, required: true },
+    companyType: { type: String, required: true },
+    commercialRegistry: { type: Number, required: true },
+    taxNumber: { type: Number, required: true },
+    address: { type: String, required: true },
+    phone: { type: String, required: true },
+    email: { type: String, required: true },
+    website: { type: String, required: true },
   })
 );
 

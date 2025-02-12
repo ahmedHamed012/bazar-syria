@@ -12,16 +12,20 @@ exports.sendMessage = catchAsync(async (req, res) => {
   // Update last message in chat
   await Chat.findByIdAndUpdate(chatId, { lastMessage: message._id });
 
-  // Emit via WebSocket
-  req.io.to(chatId).emit("receiveMessage", message);
-
   res.status(201).json(message);
 });
 
 exports.getMessages = catchAsync(async (req, res) => {
   const messages = await Message.find({ chatId: req.params.chatId }).populate(
     "sender",
-    "username email"
+    "name email"
   );
+  messages.forEach((message) => {
+    if (message.attachment) {
+      message.attachment = `${
+        process.env.ATTACHMENTS_URL
+      }${message.attachment.slice(9, message.attachment.length)}`;
+    }
+  });
   res.status(200).json(messages);
 });

@@ -77,7 +77,9 @@ const userSchema = mongoose.Schema({
     },
   ],
   ratings: [ratingSchema], // Array of ratings
-  verified: { type: Boolean, default: false },
+  identificationVerified: { type: Boolean, default: false },
+  emailVerificationToken: { type: String, default: null },
+  emailVerified: { type: Boolean, default: false },
   role: {
     type: String,
     enum: ["admin", "user"],

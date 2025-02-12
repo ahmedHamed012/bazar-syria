@@ -8,6 +8,7 @@ const userValidationSchema = Joi.object({
   email: Joi.string().email().required(),
   password: Joi.string().min(8).required(), // Adding a minimum length for security
   gender: Joi.string().valid("Male", "Female", "Other").optional(), // Define accepted genders
+  role: Joi.string().valid("admin", "user").required(), // Define user role
   phone: Joi.string().optional(), // Accepts numbers between 10-15 digits
   address: Joi.string().optional(),
   about: Joi.string().optional(),

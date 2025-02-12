@@ -39,13 +39,20 @@ const verifyIdentification = catchAsync(async (req, res, next) => {
       identificationFront: req.files.identificationFront?.[0]?.path,
       identificationBack: req.files.identificationBack?.[0]?.path,
       faceFrontSide: req.files.faceFrontSide?.[0]?.path,
-      faceLeftSide: req.files.faceLeftSide?.[0]?.path,
     });
   } else if (userType === "organization") {
     verificationData = new OrganizationVerification({
       userId,
       userType,
       businessProfile: req.files.businessProfile?.[0]?.path,
+      companyName,
+      companyType,
+      commercialRegistry,
+      taxNumber,
+      address,
+      phone,
+      email,
+      website,
     });
   } else {
     return res.status(400).json({ error: "Invalid userType" });
@@ -62,13 +69,38 @@ const getAllVerifyRequests = catchAsync(async (req, res, next) => {
     .populate("userId")
     .select("-isDeleted");
   if (!verificationRequests || verificationRequests.length === 0) {
-    return res
-      .status(200)
-      .json({
-        message: "No verification Requests found",
-        verificationRequests: [],
-      });
+    return res.status(200).json({
+      message: "No verification Requests found",
+      verificationRequests: [],
+    });
   }
+  verificationRequests.forEach((request) => {
+    request.identificationFront = request.identificationFront
+      ? `${process.env.ATTACHMENTS_URL}verification-attachments/${String(
+          request.identificationFront
+        )}`
+      : null;
+    request.identificationBack = request.identificationBack
+      ? `${process.env.ATTACHMENTS_URL}verification-attachments/${String(
+          request.identificationBack
+        )}`
+      : null;
+    request.faceFrontSide = request.faceFrontSide
+      ? `${process.env.ATTACHMENTS_URL}verification-attachments/${String(
+          request.faceFrontSide
+        )}`
+      : null;
+    // request.faceLeftSide = request.faceLeftSide
+    //   ? `${process.env.ATTACHMENTS_URL}verification-attachments/${String(
+    //       request.faceLeftSide
+    //     )}`
+    //   : null;
+    request.businessProfile = request.businessProfile
+      ? `${process.env.ATTACHMENTS_URL}verification-attachments/${String(
+          request.businessProfile
+        )}`
+      : null;
+  });
   res.status(200).json({ verificationRequests });
 });
 //----------------------------------------------------------------------------------------
@@ -82,6 +114,33 @@ const getVerifyRequestById = catchAsync(async (req, res, next) => {
   if (!verificationRequest || verificationRequest.length === 0) {
     return res.status(404).json({ message: "Verification Request not found" });
   }
+  verificationRequest.forEach((request) => {
+    request.identificationFront = request.identificationFront
+      ? `${process.env.ATTACHMENTS_URL}verification-attachments/${String(
+          request.identificationFront
+        )}`
+      : null;
+    request.identificationBack = request.identificationBack
+      ? `${process.env.ATTACHMENTS_URL}verification-attachments/${String(
+          request.identificationBack
+        )}`
+      : null;
+    request.faceFrontSide = request.faceFrontSide
+      ? `${process.env.ATTACHMENTS_URL}verification-attachments/${String(
+          request.faceFrontSide
+        )}`
+      : null;
+    // request.faceLeftSide = request.faceLeftSide
+    //   ? `${process.env.ATTACHMENTS_URL}verification-attachments/${String(
+    //       request.faceLeftSide
+    //     )}`
+    //   : null;
+    request.businessProfile = request.businessProfile
+      ? `${process.env.ATTACHMENTS_URL}verification-attachments/${String(
+          request.businessProfile
+        )}`
+      : null;
+  });
   res.status(200).json({ verificationRequest: verificationRequest[0] });
 });
 //----------------------------------------------------------------------------------------
@@ -103,7 +162,7 @@ const approveRequest = catchAsync(async (req, res, next) => {
   }
   await User.findOneAndUpdate(
     { _id: verificationRequest[0].userId },
-    { verified: true }
+    { identificationVerified: true }
   );
   await VerificationRequest.findOneAndUpdate(
     { _id: id },
@@ -134,7 +193,7 @@ const rejectRequest = catchAsync(async (req, res, next) => {
 
   await User.findOneAndUpdate(
     { _id: verificationRequest[0].userId },
-    { verified: false }
+    { identificationVerified: false }
   );
 
   await VerificationRequest.findOneAndUpdate(

@@ -22,6 +22,8 @@ const storage = multer.diskStorage({
 });
 const upload = multer({ storage: storage });
 
+router.get("/all", getAllVerifyRequests);
+router.get("/:id", getVerifyRequestById);
 router.use(protect);
 router.post(
   "/verify-request",
@@ -34,9 +36,6 @@ router.post(
   ]),
   verifyIdentification
 );
-
-router.get("/all", getAllVerifyRequests);
-router.get("/:id", getVerifyRequestById);
 router.use(adminRestriction);
 router.post("/:id/approve", approveRequest);
 router.post("/:id/reject", rejectRequest);

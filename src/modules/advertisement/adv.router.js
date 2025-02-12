@@ -5,6 +5,8 @@ const {
   getAllAds,
   updateAdvertisementById,
   deleteAdvertisementById,
+  getAddsByCategoriesAndSubcategories,
+  getMyAds,
 } = require("./adv.controller");
 const router = express.Router();
 const multer = require("multer");
@@ -21,10 +23,12 @@ const storage = multer.diskStorage({
 });
 const upload = multer({ storage: storage });
 
-router.use(protect);
 router.get("/all", getAllAds);
-router.post("/", upload.array("gallery"), addWaterMark, createAdvertisement);
+router.get("/certain/categories", getAddsByCategoriesAndSubcategories);
 router.get("/:id", getAdvertisementById);
+router.use(protect);
+router.get("/my/ads", getMyAds);
+router.post("/", upload.array("gallery"), addWaterMark, createAdvertisement);
 router.patch(
   "/:id",
   upload.array("gallery"),

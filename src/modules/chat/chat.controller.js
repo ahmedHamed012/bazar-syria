@@ -12,7 +12,7 @@ exports.createChat = catchAsync(async (req, res, next) => {
 exports.getUserChats = catchAsync(async (req, res) => {
   const chats = await Chat.find({ users: req.user.id }).populate(
     "users",
-    "username email"
+    "name email"
   );
   res.status(200).json(chats);
 });

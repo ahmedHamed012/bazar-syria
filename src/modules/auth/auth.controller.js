@@ -4,10 +4,16 @@ const User = require("../user/user.schema");
 const bcrypt = require("bcrypt");
 const crypto = require("crypto");
 const { promisify } = require("util");
+const nodemailer = require("nodemailer");
 const {
   findUserByMemberIdHelperFn,
   findUserByIdHelperFn,
 } = require("../../utils/helper-functions");
+const {
+  VerificationRequest,
+  PersonalVerification,
+  OrganizationVerification,
+} = require("../verification-requests/verification.schema");
 const googleCallback = catchAsync(async (req, res, next) => {
   const payload = {
     id: req.user.id,
@@ -42,13 +48,21 @@ const login = catchAsync(async (req, res, next) => {
   const { email, password } = req.body;
   //1) Check that the email and password is valid data
   if (!email || !password) {
-    res.status(400).json({ message: "Please provide email and password" });
+    res
+      .status(400)
+      .json({ message: "الرجاء إدخال البريد الإلكتروني وكلمة المرور صحيحة" });
   }
 
   //2) Check user exist with the same entered email and password
   const userExist = await User.findOne({ email: email });
-  if (!userExist) {
-    res.status(404).json({ message: "User not found" });
+  if ((userExist !== null || userExist !== undefined) && !userExist) {
+    res.status(404).json({ message: "هذا المستخدم غير موجود" });
+  }
+
+  if (!userExist.emailVerified) {
+    return res
+      .status(400)
+      .json({ message: "برجاء التأكد من تفعيل الحساب الخاص بك" });
   }
 
   const passwordCorrect = await verifyUserPassword(
@@ -57,7 +71,8 @@ const login = catchAsync(async (req, res, next) => {
     next
   );
 
-  if (!passwordCorrect) res.status(400).json({ message: "Incorrect password" });
+  if (!passwordCorrect)
+    res.status(400).json({ message: "كلمة المرور غير صحيحة" });
 
   const tokenPayload = {
     id: userExist.memberId,
@@ -115,11 +130,13 @@ const forgotPassword = catchAsync(async (req, res, next) => {
   //1)- Get The User From the provided email
   const email = req.body.email;
   if (!email) {
-    return res.status(400).json({ message: "Please provide a valid email" });
+    return res
+      .status(400)
+      .json({ message: "برجاء التأكد من صحة البريد الالكتروني" });
   }
   const userExisted = await User.findOne({ email: email, isDeleted: false });
   if (!userExisted || userExisted.length == 0) {
-    return res.status(404).json({ message: "User not found" });
+    return res.status(404).json({ message: "المستخدم غير موجود" });
   }
   //2)- Generate the random token and encrypt it then store it into db
   const resetToken = String(Math.floor(1000 + Math.random() * 9000)); //crypto.randomBytes(32).toString("hex")
@@ -140,7 +157,7 @@ const forgotPassword = catchAsync(async (req, res, next) => {
     { new: true }
   );
   if (!saveToken) {
-    return res.status(500).json({ message: "Error in saving the token" });
+    return res.status(500).json({ message: "خطأ فى حفظ التوكن" });
   }
   //3)- Send the token via email
   // const requestURL = `${req.protocol}://${req.get(
@@ -183,7 +200,7 @@ const forgotPassword = catchAsync(async (req, res, next) => {
       border-radius: 8px;
       font-size: 28px;
       font-weight: bold;
-      color: #113a72;
+      color: #0C9547;
       margin: 20px 0;
     }
     .content {
@@ -199,7 +216,7 @@ const forgotPassword = catchAsync(async (req, res, next) => {
       color: #999999;
     }
     .footer a {
-      color: #113a72;
+      color: #0C9547;
       text-decoration: none;
     }
   </style>
@@ -210,27 +227,29 @@ const forgotPassword = catchAsync(async (req, res, next) => {
       <h1>Password Reset Request</h1>
     </div>
     <div class="content">
-      <img src="./public/logo.png" width="auto" height="50" alt="Syria Bazar Logo">
+      <img src="https://iili.io/2DDfKcF.png" width="auto" height="80" alt="Syria Bazar Logo">
       <p>Hello, ${userExisted.name}</p>
       <p>You requested to reset your password. Please use the following OTP to complete the process:</p>
       <div class="otp-box">${resetToken}</div>
       <p>This OTP is valid for the next <strong>10 minutes</strong>. If you did not request this, please ignore this email.</p>
     </div>
     <div class="footer">
-      <p>If you have any questions, please contact our <a href="mailto:Info@bazarsyria.com">support team</a>.</p>
+      <p>If you have any questions, please contact our <a href="mailto:info@pzsyria.com">support team</a>.</p>
       <p>Thank you!</p>
     </div>
   </div>
 </body>
 </html>
   `;
-  // await sendEmail({
-  //   email: userExisted.email,
-  //   subject: "Syria Bazar - User Reset Password",
-  //   message: message,
-  // });
-  console.log("Your OTP is: ", resetToken);
-  res.status(200).json({ message: "Email sent successfully" });
+  await sendEmail({
+    email: userExisted.email,
+    subject: "Syria Bazar - User Reset Password",
+    message: message,
+  });
+  // console.log("Your OTP is: ", resetToken);
+  res.status(200).json({
+    message: "تم إرسال بريد إلكتروني يحتوى على الرمز الخاص بتغيير كلمة المرور",
+  });
 });
 //-----------------------------------------------------------------------------------------
 
@@ -243,7 +262,9 @@ const resetPassword = catchAsync(async (req, res, next) => {
     .update(token)
     .digest("hex");
   if (!email) {
-    return res.status(400).json({ message: "Please provide a valid email" });
+    return res
+      .status(400)
+      .json({ message: "برجاء التأكد من صحة البريد الالكتروني " });
   }
   //2) Search for user with the same token and valid expiration date
   const getUserWithSameToken = await User.findOne({
@@ -252,19 +273,19 @@ const resetPassword = catchAsync(async (req, res, next) => {
     isDeleted: false,
   });
   if (!getUserWithSameToken || getUserWithSameToken.length == 0) {
-    return res
-      .status(404)
-      .json({ message: "The token is incorrect or the user not found" });
+    return res.status(404).json({
+      message: "الرمز الذى ادخلته قد يكون غير صحيح او المستخدم غير موجود",
+    });
   }
   const expirationDateCompare =
     new Date(getUserWithSameToken.resetTokenExpirationDate).getTime() >
     new Date().getTime();
 
   if (!expirationDateCompare) {
-    return res.status(400).json({ message: "Token is expired" });
+    return res.status(400).json({ message: "الرمز منتهي الصلاحية" });
   }
   if (password !== confirmPassword) {
-    return res.status(400).json({ message: "Passwords do not match" });
+    return res.status(400).json({ message: "كلمة المرور غير متوافقة" });
   }
   const hashedPassword = await bcrypt.hash(password, 10);
   // const hashedPassword = password;
@@ -296,8 +317,47 @@ const resetPassword = catchAsync(async (req, res, next) => {
 const getMyProfile = catchAsync(async (req, res, next) => {
   const { id } = req.user;
   const user = await findUserByIdHelperFn(id);
-  res.status(200).json({ user });
+  const verificationRequests = await VerificationRequest.find({
+    userId: id,
+  })
+    .populate("userId")
+    .select("status");
+  const updatedUser = {
+    ...user.toObject(),
+    idVerificationStatus: verificationRequests[0]?.status,
+  };
+
+  res.status(200).json({ user: updatedUser });
 });
+//-----------------------------------------------------------------------------------------
+const sendEmail = async (options) => {
+  try {
+    const transporter = nodemailer.createTransport({
+      host: "smtp.hostinger.com",
+      port: 465, //  TLS    25       587     2525           SSL 465
+      secure: true, // true for 465, false for other ports
+      auth: {
+        // user: account.user, // generated ethereal user
+        // pass: account.pass // generated ethereal password
+        user: "info@pzsyria.com",
+        pass: "QuillAgencyAM2024+",
+      },
+      tls: {
+        rejectUnauthorized: false,
+      },
+    });
+    const mailOptions = {
+      from: "info@pzsyria.com",
+      to: options.email,
+      subject: options.subject,
+      html: options.message,
+    };
+
+    await transporter.sendMail(mailOptions);
+  } catch (error) {
+    console.error("Unexpected error:", error);
+  }
+};
 module.exports = {
   googleCallback,
   login,
@@ -306,4 +366,5 @@ module.exports = {
   resetPassword,
   adminRestriction,
   getMyProfile,
+  sendEmail,
 };

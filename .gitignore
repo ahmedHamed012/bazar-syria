@@ -54,7 +54,7 @@ pnpm-lock.yaml
 # *.ico
 
 # Uploads
-uploads/
+public/
 
 # Mongoose-specific generated files
 *.seed
